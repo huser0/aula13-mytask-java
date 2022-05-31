@@ -1,0 +1,60 @@
+<%@page import="model.User"%>
+<%@page import="model.CreationListener"%>
+<%@ page pageEncoding="UTF-8" %>
+<%
+    Exception headerException = null;
+    if(request.getParameter("login")!=null){
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        try{
+            User searchedUser = User.getUser(username, password);
+            if(searchedUser == null){
+                headerException = new Exception
+                ("Usuário não encontrado ou senha inválida");
+            }else{
+                session.setAttribute("user", searchedUser);
+                response.sendRedirect(request.getRequestURI());
+            }
+        }catch(Exception ex){
+            headerException = ex;
+        }
+    }else if(request.getParameter("logout")!=null){
+        session.removeAttribute("user");
+        response.sendRedirect(request.getRequestURI());
+    }
+    User sessionUser = (User)session.getAttribute("user");
+%>
+<h1>TasksApp</h1>
+<%if(CreationListener.exception!=null){%>
+<div style="color:red">
+    Erro na criação do Banco de Dados:
+    <%=CreationListener.exception.getMessage()%>
+</div><hr/>
+<%}%>
+<%if(headerException!=null){%>
+<div style="color:red">
+    Erro no login/logout:
+    <%=headerException.getMessage()%>
+</div><hr/>
+<%}%>
+
+<%if(sessionUser == null){%>
+<form method="post">
+    Username:
+    <input type="text" name="username"/>
+    Senha:
+    <input type="password" name="password"/>
+    <input type="submit" name="login" value="Entrar"/>
+</form>
+<%}else{%>
+<form method="post">
+    <a href="index.jsp">INDEX</a>
+    <a href="Users.jsp">USERS</a> 
+    <a href="tasks.jsp">TAREFAS</a> 
+    <a href="my-tasks.jsp">MINHAS TAREFAS</a> 
+
+    Bem vindo, <%= sessionUser.getName() %>
+    <input type="submit" name="logout" value="Sair"/>
+</form>
+<%}%>
+<hr/>
